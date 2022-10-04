@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -16,18 +17,42 @@ namespace VideoProcessor
 
             var videoLocation = context.GetInput<string>();
 
-            var transcodeLocation = await context.CallActivityAsync<string> ("TranscodeVideo", videoLocation);
+            string transcodeLocation = null;
+            string thumbnailLocation = null;
+            string withIntoLocation = null;
 
-            var thumbnailLocation = await context.CallActivityAsync<string>("ExtractThumbnail", transcodeLocation);
+            try
+            {
+                transcodeLocation = await context.CallActivityAsync<string>("TranscodeVideo", videoLocation);
 
-            var withIntoLocation = await context.CallActivityAsync<string>("PrependIntro", thumbnailLocation);
+                //Retry for times after 5 seconds.
+                thumbnailLocation = await context.CallActivityWithRetryAsync<string>("ExtractThumbnail", 
+                    new RetryOptions(TimeSpan.FromSeconds(5), 4) { Handle = e => e.InnerException is InvalidOperationException},
+                    transcodeLocation);
+
+                withIntoLocation = await context.CallActivityAsync<string>("PrependIntro", thumbnailLocation);
+            }
+            catch (System.Exception ex)
+            {
+                log.LogInformation($"Caught an error from activity: {ex.Message}");
+                await context.CallActivityAsync<string>("Cleanup", new[] { transcodeLocation, thumbnailLocation, withIntoLocation });
+
+                return new
+                {
+                    Error = "Failed to process upload video",
+                    Message = ex.Message
+                };
+            };
 
             return new
             {
-                Transcode = transcodeLocation,
-                Thumbnail = thumbnailLocation,
-                WithInto = withIntoLocation
+                TranscodeLocation = transcodeLocation,
+                ThumbnailLocation = thumbnailLocation,
+                WithIntoLocation = withIntoLocation
             };
+
+
+
         }
     }
 }
