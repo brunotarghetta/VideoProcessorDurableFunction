@@ -65,5 +65,15 @@ namespace VideoProcessor
 
             return $"Cleaned Up successfully";
         }
+
+        [FunctionName(nameof(GetTranscodeBitRates))]
+        public static int[] GetTranscodeBitRates([ActivityTrigger]object input)
+        {
+            return Environment.GetEnvironmentVariable("TranscodeBitRates").Split(',').Select(int.Parse).ToArray();
+        }
+
+
+        
+
     }
 }

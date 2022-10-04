@@ -24,7 +24,9 @@ namespace VideoProcessor
 
             try
             {
-                var bitRates = new[]{ 1000,2000,3000,4000 };
+                var bitRates = await context.CallActivityAsync<int[]>("GetTranscodeBitRates", null);
+
+                //var bitRates = new[]{ 1000,2000,3000,4000 };
                 var transcodeTasks = new List<Task<VideoFileInfo>>();
 
                 foreach (var bitRate in bitRates)
