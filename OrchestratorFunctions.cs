@@ -44,8 +44,16 @@ namespace VideoProcessor
                     OrchestrationId = context.InstanceId,
                     VideoLocation = withIntoLocation
                 });
-
-                approvalResult = await context.WaitForExternalEvent<string>("ApprovalResult");
+                try
+                {
+                    approvalResult = await context.WaitForExternalEvent<string>("ApprovalResult", TimeSpan.FromSeconds(30));
+                }
+                catch (TimeoutException)
+                {
+                    log.LogWarning("Time out waiting for approval");
+                    approvalResult = "Time Out";
+                }
+                
 
                 if (approvalResult == "Approved")
                 {
