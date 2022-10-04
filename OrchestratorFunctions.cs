@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -23,7 +24,21 @@ namespace VideoProcessor
 
             try
             {
-                transcodeLocation = await context.CallActivityAsync<string>("TranscodeVideo", videoLocation);
+                var bitRates = new[]{ 1000,2000,3000,4000 };
+                var transcodeTasks = new List<Task<VideoFileInfo>>();
+
+                foreach (var bitRate in bitRates)
+                {
+                    var info = new VideoFileInfo { Location = videoLocation, BitRate = bitRate };
+                    var task = context.CallActivityAsync<VideoFileInfo>("TranscodeVideo", info);
+                    transcodeTasks.Add(task);
+                }
+                var transcodeResults = await Task.WhenAll(transcodeTasks);
+
+
+                transcodeLocation = transcodeResults.OrderByDescending(r => r.BitRate)
+                    .Select(r => r.Location)
+                    .First();
 
                 //Retry for times after 5 seconds.
                 thumbnailLocation = await context.CallActivityWithRetryAsync<string>("ExtractThumbnail", 
