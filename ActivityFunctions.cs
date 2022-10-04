@@ -73,7 +73,34 @@ namespace VideoProcessor
         }
 
 
+        [FunctionName(nameof(SendApprovalRequestEmail))]
+        public static async Task SendApprovalRequestEmail([ActivityTrigger] string inputVideo, ILogger log)
+        {
+            log.LogInformation($"Requesting Approval for {inputVideo}.");
+            
+            //Simulate sending email
+            await Task.Delay(1000);
+        }
         
+        [FunctionName(nameof(PublishVideo))]
+        public static async Task PublishVideo([ActivityTrigger] string inputVideo, ILogger log)
+        {
+            log.LogInformation($"Publishing {inputVideo}.");
+
+            //Simulate publishing
+            await Task.Delay(1000);
+        }
+
+        [FunctionName(nameof(RejectVideo))]
+        public static async Task RejectVideo([ActivityTrigger] string inputVideo, ILogger log)
+        {
+            log.LogInformation($"Rejecting {inputVideo}.");
+
+            //Simulate rejecting
+            await Task.Delay(1000);
+        }
+
+
 
     }
 }

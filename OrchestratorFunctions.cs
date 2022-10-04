@@ -21,6 +21,7 @@ namespace VideoProcessor
             string transcodeLocation = null;
             string thumbnailLocation = null;
             string withIntoLocation = null;
+            string approvalResult = "Unknown";
 
             try
             {
@@ -32,11 +33,24 @@ namespace VideoProcessor
                     .First();
 
                 //Retry for times after 5 seconds.
-                thumbnailLocation = await context.CallActivityWithRetryAsync<string>("ExtractThumbnail", 
-                    new RetryOptions(TimeSpan.FromSeconds(5), 4) { Handle = e => e.InnerException is InvalidOperationException},
+                thumbnailLocation = await context.CallActivityWithRetryAsync<string>("ExtractThumbnail",
+                    new RetryOptions(TimeSpan.FromSeconds(5), 4) { Handle = e => e.InnerException is InvalidOperationException },
                     transcodeLocation);
 
                 withIntoLocation = await context.CallActivityAsync<string>("PrependIntro", thumbnailLocation);
+
+                await context.CallActivityAsync("SendApprovalRequestEmail", withIntoLocation);
+
+                approvalResult = await context.WaitForExternalEvent<string>("ApprovalResult");
+
+                if (approvalResult == "Approved")
+                {
+                    await context.CallActivityAsync("PublishVideo", withIntoLocation);
+                }
+                else
+                {
+                    await context.CallActivityAsync("Reject", withIntoLocation);
+                }
             }
             catch (System.Exception ex)
             {
@@ -54,7 +68,8 @@ namespace VideoProcessor
             {
                 TranscodeLocation = transcodeLocation,
                 ThumbnailLocation = thumbnailLocation,
-                WithIntoLocation = withIntoLocation
+                WithIntoLocation = withIntoLocation,
+                ApprovalResult = approvalResult
             };
 
 
@@ -68,7 +83,6 @@ namespace VideoProcessor
 
             var bitRates = await context.CallActivityAsync<int[]>("GetTranscodeBitRates", null);
 
-            //var bitRates = new[]{ 1000,2000,3000,4000 };
             var transcodeTasks = new List<Task<VideoFileInfo>>();
 
             foreach (var bitRate in bitRates)
