@@ -39,7 +39,11 @@ namespace VideoProcessor
 
                 withIntoLocation = await context.CallActivityAsync<string>("PrependIntro", thumbnailLocation);
 
-                await context.CallActivityAsync("SendApprovalRequestEmail", withIntoLocation);
+                await context.CallActivityAsync("SendApprovalRequestEmail", new ApprovalInfo()
+                {
+                    OrchestrationId = context.InstanceId,
+                    VideoLocation = withIntoLocation
+                });
 
                 approvalResult = await context.WaitForExternalEvent<string>("ApprovalResult");
 
@@ -49,7 +53,7 @@ namespace VideoProcessor
                 }
                 else
                 {
-                    await context.CallActivityAsync("Reject", withIntoLocation);
+                    await context.CallActivityAsync("RejectVideo", withIntoLocation);
                 }
             }
             catch (System.Exception ex)

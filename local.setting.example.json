@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "TranscodeBitRates": "1010,2020,3030",
+    "SendGridKey": "MyKeyFromSendGrid",
+    "ApprovalEmail": "bruno_targhetta@hotmail.com",
+    "SenderEmail": "brunotarghetta@gmail.com",
+    "Host": "http://localhost:7071"
+
+  }
+}
