@@ -47,9 +47,21 @@ namespace VideoProcessor
             await client.RaiseEventAsync(approval.OrchestrationId, "ApprovalResult", result);
 
             return new OkResult();
-
         }
 
 
+        [FunctionName(nameof(StartPeriodicTask))]
+        public static async Task<IActionResult> StartPeriodicTask(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)] HttpRequest request,
+            [DurableClient] IDurableOrchestrationClient client,
+            ILogger log
+            )
+        {
+            var instanceId = await client.StartNewAsync(nameof(OrchestratorFunctions.PeriodicTaskOrchestrator), null, 0);
+
+            var payload = client.CreateHttpManagementPayload(instanceId);
+
+            return new OkObjectResult(payload);
+        }
     }
 }

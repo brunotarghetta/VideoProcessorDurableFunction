@@ -128,6 +128,12 @@ namespace VideoProcessor
         }
 
 
+        [FunctionName(nameof(PeriodicActivity))]
+        public static void PeriodicActivity([ActivityTrigger] string timesRun, ILogger log)
+        {
+            log.LogWarning($"Running periodic activity, times run = {timesRun}");
+        }
+
 
     }
 }

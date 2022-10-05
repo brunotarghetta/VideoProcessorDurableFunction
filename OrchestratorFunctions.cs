@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
@@ -106,7 +107,24 @@ namespace VideoProcessor
             var transcodeResults = await Task.WhenAll(transcodeTasks);
 
             return transcodeResults;
+        }
 
+        [FunctionName(nameof(PeriodicTaskOrchestrator))]
+        public static async Task<int> PeriodicTaskOrchestrator(
+            [OrchestrationTrigger] IDurableOrchestrationContext ctx, ILogger log)
+        {
+            log = ctx.CreateReplaySafeLogger(log);
+            var timesRun = ctx.GetInput<int>();
+            timesRun++;
+            
+            log.LogInformation($"Starting the PeriodicTask activity {ctx.InstanceId}, {timesRun}");
+            await ctx.CallActivityAsync(nameof(ActivityFunctions.PeriodicActivity), timesRun);
+            
+            var nextRun = ctx.CurrentUtcDateTime.AddSeconds(10);
+            await ctx.CreateTimer(nextRun, CancellationToken.None);
+            
+            ctx.ContinueAsNew(timesRun);
+            return timesRun;
         }
     }
 }
