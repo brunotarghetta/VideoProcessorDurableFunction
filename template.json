@@ -1,0 +1,780 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serverfarms_CentralUSPlan_name": {
+            "defaultValue": "CentralUSPlan",
+            "type": "String"
+        },
+        "sites_VideoProcessor20221005180315_name": {
+            "defaultValue": "VideoProcessor20221005180315",
+            "type": "String"
+        },
+        "storageAccounts_videoprocessor2022100518_name": {
+            "defaultValue": "videoprocessor2022100518",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('storageAccounts_videoprocessor2022100518_name')]",
+            "location": "eastus",
+            "tags": {
+                "hidden-related:/providers/Microsoft.Web/sites/VideoProcessor20221005180315": "empty"
+            },
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "properties": {
+                "minimumTlsVersion": "TLS1_0",
+                "allowBlobPublicAccess": true,
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('serverfarms_CentralUSPlan_name')]",
+            "location": "Central US",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('sites_VideoProcessor20221005180315_name')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_CentralUSPlan_name'))]"
+            ],
+            "kind": "functionapp",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "videoprocessor20221005180315.azurewebsites.net",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "videoprocessor20221005180315.scm.azurewebsites.net",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_CentralUSPlan_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": false,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 200,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "B49E92B027E1D453C22B968DCA5573B14361F50AF0C2C57024AB9301673605DD",
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/ftp')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/scm')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/web')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v6.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$VideoProcessor20221005180315",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "FtpsOnly",
+                "preWarmedInstanceCount": 0,
+                "functionAppScaleLimit": 200,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/Cleanup')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/Cleanup/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/Cleanup/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/Cleanup.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/Cleanup",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/ExtractThumbnail')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/ExtractThumbnail/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/ExtractThumbnail/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/ExtractThumbnail.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/ExtractThumbnail",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/GetTranscodeBitRates')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/GetTranscodeBitRates/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/GetTranscodeBitRates/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/GetTranscodeBitRates.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/GetTranscodeBitRates",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/PeriodicActivity')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PeriodicActivity/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PeriodicActivity/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/PeriodicActivity.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/PeriodicActivity",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/PeriodicTaskOrchestrator')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PeriodicTaskOrchestrator/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PeriodicTaskOrchestrator/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/PeriodicTaskOrchestrator.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/PeriodicTaskOrchestrator",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/PrependIntro')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PrependIntro/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PrependIntro/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/PrependIntro.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/PrependIntro",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/ProcessVideoOrchestrator')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/ProcessVideoOrchestrator/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/ProcessVideoOrchestrator/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/ProcessVideoOrchestrator.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/ProcessVideoOrchestrator",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/ProcessVideoStarter')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/ProcessVideoStarter/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/ProcessVideoStarter/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/ProcessVideoStarter.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/ProcessVideoStarter",
+                "config": {},
+                "invoke_url_template": "https://videoprocessor20221005180315.azurewebsites.net/api/processvideostarter",
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/PublishVideo')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PublishVideo/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/PublishVideo/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/PublishVideo.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/PublishVideo",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/RejectVideo')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/RejectVideo/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/RejectVideo/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/RejectVideo.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/RejectVideo",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/SendApprovalRequestEmail')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/SendApprovalRequestEmail/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/SendApprovalRequestEmail/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/SendApprovalRequestEmail.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/SendApprovalRequestEmail",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/StartPeriodicTask')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/StartPeriodicTask/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/StartPeriodicTask/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/StartPeriodicTask.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/StartPeriodicTask",
+                "config": {},
+                "invoke_url_template": "https://videoprocessor20221005180315.azurewebsites.net/api/startperiodictask",
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/SubmitVideoApproval')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/SubmitVideoApproval/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/SubmitVideoApproval/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/SubmitVideoApproval.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/SubmitVideoApproval",
+                "config": {},
+                "invoke_url_template": "https://videoprocessor20221005180315.azurewebsites.net/api/submitvideoapproval/{id}",
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/TranscodeVideo')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/TranscodeVideo/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/TranscodeVideo/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/TranscodeVideo.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/TranscodeVideo",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/TranscodeVideoOrchestrator')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "script_root_path_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/TranscodeVideoOrchestrator/",
+                "script_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/bin/VideoProcessor.dll",
+                "config_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/site/wwwroot/TranscodeVideoOrchestrator/function.json",
+                "test_data_href": "https://videoprocessor20221005180315.azurewebsites.net/admin/vfs/data/Functions/sampledata/TranscodeVideoOrchestrator.dat",
+                "href": "https://videoprocessor20221005180315.azurewebsites.net/admin/functions/TranscodeVideoOrchestrator",
+                "config": {},
+                "language": "DotNetAssembly",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2022-03-01",
+            "name": "[concat(parameters('sites_VideoProcessor20221005180315_name'), '/', parameters('sites_VideoProcessor20221005180315_name'), '.azurewebsites.net')]",
+            "location": "Central US",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_VideoProcessor20221005180315_name'))]"
+            ],
+            "properties": {
+                "siteName": "VideoProcessor20221005180315",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-applease')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-leases')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "shareQuota": 5120,
+                "enabledProtocols": "SMB"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-control-00')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-control-01')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-control-02')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-control-03')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315-workitems')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/Approvals')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315History')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices/tables",
+            "apiVersion": "2022-05-01",
+            "name": "[concat(parameters('storageAccounts_videoprocessor2022100518_name'), '/default/', parameters('storageAccounts_videoprocessor2022100518_name'), '0315Instances')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/tableServices', parameters('storageAccounts_videoprocessor2022100518_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_videoprocessor2022100518_name'))]"
+            ],
+            "properties": {}
+        }
+    ]
+}

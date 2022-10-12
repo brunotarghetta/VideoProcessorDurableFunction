@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serverfarms_CentralUSPlan_name": {
+            "value": "CentralUSPlan-dev-sf"
+        },
+        "sites_VideoProcessor20221005180315_name": {
+            "value": "videopro20221006devsi"
+        },
+        "storageAccounts_videoprocessor2022100518_name": {
+            "value": "videopro20221006devst"
+        }
+    }
+}
