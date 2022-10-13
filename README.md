@@ -38,7 +38,17 @@ Prerequisites:
 
 
 **Add settings** 
-`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "AzureWebJobsStorage=DefaultEndpointsProtocol=https;AccountName=videopro20221006devst;AccountKey=kZs+yUVM86k+VUSHheXy0a+mNNdHosyLgtrhyQ6Onup/xD8A4sd/fbK/p+dKzZmo5aQR8f3v2K3d+AStCD0buQ==;EndpointSuffix=core.windows.net" "ApprovalEmail=bruno_targhetta@hotmail.com" "FUNCTIONS_EXTENSION_VERSION=~4" "FUNCTIONS_WORKER_RUNTIME=dotnet" "Host=https://videopro20221006devsi.azurewebsites.net" "SenderEmail=brunotarghetta@gmail.com" "SendGridKey={Sendgrid key}" 	"TranscodeBitRates=1010,2020,3030" "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=DefaultEndpointsProtocol=https;AccountName=videopro20221006devst;AccountKey=kZs+yUVM86k+VUSHheXy0a+mNNdHosyLgtrhyQ6Onup/xD8A4sd/fbK/p+dKzZmo5aQR8f3v2K3d+AStCD0buQ==;EndpointSuffix=core.windows.net" "WEBSITE_CONTENTSHARE=videoprocessor20221005180315" "WEBSITE_RUN_FROM_PACKAGE=0"`
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "AzureWebJobsStorage=DefaultEndpointsProtocol=https;AccountName=videopro20221006devst;AccountKey=kZs+yUVM86k+VUSHheXy0a+mNNdHosyLgtrhyQ6Onup/xD8A4sd/fbK/p+dKzZmo5aQR8f3v2K3d+AStCD0buQ==;EndpointSuffix=core.windows.net"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "ApprovalEmail=bruno_targhetta@hotmail.com"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "FUNCTIONS_EXTENSION_VERSION=~4"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "FUNCTIONS_WORKER_RUNTIME=dotnet"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "Host=https://videopro20221006devsi.azurewebsites.net"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "SenderEmail=brunotarghetta@gmail.com"`
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "SendGridKey={Sendgrid key}"` 	
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "TranscodeBitRates=1010,2020,3030"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=DefaultEndpointsProtocol=https;AccountName=videopro20221006devst;AccountKey=kZs+yUVM86k+VUSHheXy0a+mNNdHosyLgtrhyQ6Onup/xD8A4sd/fbK/p+dKzZmo5aQR8f3v2K3d+AStCD0buQ==;EndpointSuffix=core.windows.net"` 
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "WEBSITE_CONTENTSHARE=videoprocessor20221005180315"`
+`az functionapp config appsettings set -n videopro20221006devsi -g VideoProcessor-dev-rg2 --settings "WEBSITE_RUN_FROM_PACKAGE=0"`
 
 **Deploy function**
 `func azure functionapp publish videopro20221006devsi --force`
