@@ -50,3 +50,11 @@ https://videopro20221006devsi.azurewebsites.net/api/processvideostarter?video=ex
 `az group delete -n VideoProcessor-dev-rg2`
 
 
+# Publish from CLI using scripts
+
+Prerequisites:
+
+1. Install [azure-functions-core-tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v4%2Cwindows%2Ccsharp%2Cportal%2Cbash#install-the-azure-functions-core-tools) 
+2. Run powershell from root project 
+
+`.\deploy-videoprocessor.ps1`
